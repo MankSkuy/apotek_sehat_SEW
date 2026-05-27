@@ -1,0 +1,7 @@
+{
+  "name": "apotek-sehat",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
