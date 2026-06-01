@@ -9,39 +9,35 @@ const routes: Routes = [
   },
   {
     path: 'folder/:id',
-    loadChildren: () => import('./folder/folder.module').then( m => m.FolderPageModule)
+    loadComponent: () => import('./folder/folder.module').then( m => m.FolderPageModule)
   },
   {
     path: 'login',
-    loadChildren: () => import('./modules/auth/login/login.module').then( m => m.LoginPageModule)
+    loadComponent: () => import('./modules/auth/login/login.page').then( m => m.LoginPage)
   },
   {
     path: 'manajemen-karyawan',
-    loadChildren: () => import('./modules/auth/manajemen-karyawan/manajemen-karyawan.module').then( m => m.ManajemenKaryawanPageModule)
+    loadComponent: () => import('./modules/auth/manajemen-karyawan/manajemen-karyawan.page').then( m => m.ManajemenKaryawanPage)
   },
   {
     path: 'data-obat',
-    loadChildren: () => import('./modules/master/data-obat/data-obat.module').then( m => m.DataObatPageModule)
+    loadComponent: () => import('./modules/master/data-obat/data-obat.page').then( m => m.DataObatPage)
   },
   {
     path: 'pembelian',
-    loadChildren: () => import('./modules/persediaan/pembelian/pembelian.module').then( m => m.PembelianPageModule)
+    loadComponent: () => import('./modules/persediaan/pembelian/pembelian.page').then( m => m.PembelianPage)
   },
   {
     path: 'manajemen-batch',
-    loadChildren: () => import('./modules/persediaan/manajemen-batch/manajemen-batch.module').then( m => m.ManajemenBatchPageModule)
+    loadComponent: () => import('./modules/persediaan/manajemen-batch/manajemen-batch.page').then( m => m.ManajemenBatchPage)
   },
   {
     path: 'pos-transaksi',
-    loadChildren: () => import('./modules/kasir/pos-transaksi/pos-transaksi.module').then( m => m.PosTransaksiPageModule)
-  },
-  {
-    path: 'jurnal',
-    loadChildren: () => import('./modules/keuangan/jurnal/jurnal.module').then( m => m.JurnalPageModule)
+    loadComponent: () => import('./modules/kasir/pos-transaksi/pos-transaksi.page').then( m => m.PosTransaksiPage)
   },
   {
     path: 'laporan',
-    loadChildren: () => import('./modules/keuangan/laporan/laporan.module').then( m => m.LaporanPageModule)
+    loadComponent: () => import('./modules/keuangan/laporan/laporan.page').then( m => m.LaporanPage)
   }
 ];
 
