@@ -1,13 +1,115 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>pos-transaksi</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">pos-transaksi</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <app-shared-header activeTab="penjualan"></app-shared-header>
+
+  <div class="page-content">
+    <div class="pos-layout">
+      <!-- Left: Pilih Obat -->
+      <div class="obat-section">
+        <div class="section-header">
+          <h2><ion-icon name="medical-outline"></ion-icon> Pilih Obat</h2>
+        </div>
+
+        <!-- Search -->
+        <div class="search-box">
+          <ion-icon name="search-outline" class="search-icon"></ion-icon>
+          <input
+            type="text"
+            placeholder="Ketik nama obat yang dicari..."
+            [(ngModel)]="searchQuery"
+            id="search-obat"
+          />
+        </div>
+
+        <!-- Grid Obat -->
+        <div class="obat-grid">
+          @for (obat of filteredObat; track obat.id) {
+            <div class="obat-card" (click)="addToCart(obat)">
+              <div class="obat-card-header">
+                <button class="add-btn">
+                  <ion-icon name="add"></ion-icon>
+                </button>
+                <span class="obat-nama">{{ obat.nama }}</span>
+              </div>
+              <div class="obat-harga">{{ formatRupiah(obat.harga) }}</div>
+              <div class="obat-stok">
+                <span class="stok-dot" [class.low]="obat.stok < 30"></span>
+                Stok: {{ obat.stok }}
+              </div>
+            </div>
+          }
+
+          <div class="empty-state" *ngIf="filteredObat.length === 0">
+            <ion-icon name="search-outline"></ion-icon>
+            <p>Obat tidak ditemukan</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Keranjang -->
+      <div class="cart-section">
+        <div class="cart-header">
+          <ion-icon name="cart-outline"></ion-icon>
+          Keranjang Belanja
+        </div>
+
+        <div class="cart-body">
+          <!-- Empty cart -->
+          <div class="cart-empty" *ngIf="cart.length === 0">
+            <ion-icon name="cart-outline"></ion-icon>
+            <p>Keranjang kosong</p>
+            <span>Klik obat untuk menambahkan</span>
+          </div>
+
+          <!-- Cart items -->
+          <div class="cart-items">
+            @for (item of cart; track item.obat.id) {
+              <div class="cart-item">
+                <div class="cart-item-top">
+                  <span class="cart-item-name">{{ item.obat.nama }}</span>
+                  <button class="cart-remove" (click)="removeFromCart(item)">
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </button>
+                </div>
+                <div class="cart-item-bottom">
+                  <div class="qty-control">
+                    <button class="qty-btn minus" (click)="decreaseQty(item)">
+                      <ion-icon name="remove"></ion-icon>
+                    </button>
+                    <span class="qty-value">{{ item.qty }}</span>
+                    <button class="qty-btn plus" (click)="increaseQty(item)">
+                      <ion-icon name="add"></ion-icon>
+                    </button>
+                  </div>
+                  <span class="cart-item-subtotal">{{ formatRupiah(item.obat.harga * item.qty) }}</span>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Total -->
+          <div class="cart-total" *ngIf="cart.length > 0">
+            <span>TOTAL BAYAR:</span>
+            <strong>{{ formatRupiah(totalBayar) }}</strong>
+          </div>
+
+          <!-- Submit -->
+          <button
+            class="btn-checkout"
+            *ngIf="cart.length > 0"
+            (click)="selesaikanTransaksi()"
+            id="btn-checkout"
+          >
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            Selesaikan Transaksi
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Toast -->
+  <div class="success-toast" *ngIf="showSuccessToast">
+    <ion-icon name="checkmark-circle"></ion-icon>
+    Transaksi berhasil diselesaikan!
+  </div>
 </ion-content>
