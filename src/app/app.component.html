@@ -1,33 +1,86 @@
 <ion-app>
-  <ion-split-pane contentId="main-content">
-    <ion-menu contentId="main-content" type="overlay">
-      <ion-content>
-        <ion-list id="inbox-list">
-          <ion-list-header>Inbox</ion-list-header>
-          <ion-note>hi&#64;ionicframework.com</ion-note>
+  <header class="top-navbar" *ngIf="isLoggedIn">
+    <div class="nav-brand">
+      <div class="brand-logo">
+        <ion-icon name="medkit"></ion-icon>
+      </div>
+      <div class="brand-text">
+        <h2>Apotek Sehat</h2>
+        <p>Sistem Manajemen Apotek</p>
+      </div>
+    </div>
 
-          @for (p of appPages; track p; let i = $index) {
-            <ion-menu-toggle auto-hide="false">
-              <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
-                <ion-icon aria-hidden="true" slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
-                <ion-label>{{ p.title }}</ion-label>
-              </ion-item>
-            </ion-menu-toggle>
-          }
-        </ion-list>
+    <nav class="nav-links">
 
-        <ion-list id="labels-list">
-          <ion-list-header>Labels</ion-list-header>
+      <!-- Semua role -->
+      <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <ion-icon name="apps-outline"></ion-icon>
+        <span>Dashboard</span>
+      </a>
 
-          @for (label of labels; track label) {
-            <ion-item lines="none">
-              <ion-icon aria-hidden="true" slot="start" ios="bookmark-outline" md="bookmark-sharp"></ion-icon>
-              <ion-label>{{ label }}</ion-label>
-            </ion-item>
-          }
-        </ion-list>
-      </ion-content>
-    </ion-menu>
-    <ion-router-outlet id="main-content"></ion-router-outlet>
-  </ion-split-pane>
+      <!-- Owner + Apoteker -->
+      <a routerLink="/data-obat" routerLinkActive="active"
+         *ngIf="userRole === 'Owner' || userRole === 'Apoteker'">
+        <ion-icon name="list-outline"></ion-icon>
+        <span>Master Obat</span>
+      </a>
+
+      <!-- Owner + Apoteker -->
+      <a routerLink="/manajemen-batch" routerLinkActive="active"
+         *ngIf="userRole === 'Owner' || userRole === 'Apoteker'">
+        <ion-icon name="medkit-outline"></ion-icon>
+        <span>Stok Obat</span>
+      </a>
+
+      <!-- Owner + Kasir -->
+      <a routerLink="/pos-transaksi" routerLinkActive="active"
+         *ngIf="userRole === 'Owner' || userRole === 'Kasir'">
+        <ion-icon name="cart-outline"></ion-icon>
+        <span>Penjualan</span>
+      </a>
+
+      <!-- Owner + Kasir -->
+      <a routerLink="/laporan" routerLinkActive="active"
+         *ngIf="userRole === 'Owner' || userRole === 'Kasir'">
+        <ion-icon name="bar-chart-outline"></ion-icon>
+        <span>Laporan Keuangan</span>
+      </a>
+
+      <!-- Owner only -->
+      <a routerLink="/manajemen-karyawan" routerLinkActive="active"
+         *ngIf="userRole === 'Owner'">
+        <ion-icon name="people-outline"></ion-icon>
+        <span>Manajemen Karyawan</span>
+      </a>
+
+    </nav>
+
+    <div class="nav-actions">
+      <!-- Warning hanya untuk Owner & Apoteker -->
+      <button class="action-btn warning-btn"
+              *ngIf="warningCount > 0 && (userRole === 'Owner' || userRole === 'Apoteker')"
+              routerLink="/manajemen-batch">
+        <ion-icon name="warning-outline"></ion-icon>
+        <span>{{ warningCount }} Peringatan</span>
+      </button>
+
+      <div class="user-profile">
+        <ion-icon name="person-circle-outline"></ion-icon>
+        <div class="user-info">
+          <span class="user-name">{{ userName }}</span>
+          <span class="user-role badge-role" [ngClass]="'role-' + userRole.toLowerCase()">
+            {{ userRole }}
+          </span>
+        </div>
+      </div>
+
+      <button class="action-btn logout-btn" (click)="logout()">
+        <ion-icon name="log-out-outline"></ion-icon> Logout
+      </button>
+    </div>
+  </header>
+
+  <div class="main-container" [class.with-navbar]="isLoggedIn">
+    <ion-router-outlet></ion-router-outlet>
+  </div>
 </ion-app>

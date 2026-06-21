@@ -1,13 +1,159 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>laporan</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content [fullscreen]="true" class="bg-light ion-padding">
+  
+  <div class="header-section">
+    <div class="title-area">
+      <ion-icon name="bar-chart"></ion-icon>
+      <h2>Laporan Keuangan & Penjualan</h2>
+    </div>
+    
+    <div class="filter-area">
+      <label>Periode Laporan:</label>
+      <select class="custom-select" [(ngModel)]="periode" (change)="loadData()">
+        <option value="hari_ini">Hari Ini</option>
+        <option value="7_hari">7 Hari Terakhir</option>
+        <option value="30_hari">30 Hari Terakhir</option>
+      </select>
+    </div>
+  </div>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">laporan</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card bg-primary">
+      <div class="kpi-content">
+        <div class="kpi-label">Total Pendapatan</div>
+        <div class="kpi-value">{{ summary.total_pendapatan | currency:'Rp ':'symbol':'1.0-0' }}</div>
+      </div>
+      <ion-icon name="wallet" class="kpi-icon"></ion-icon>
+    </div>
+    
+    <div class="kpi-card bg-success">
+      <div class="kpi-content">
+        <div class="kpi-label">Total Transaksi</div>
+        <div class="kpi-value">{{ summary.total_transaksi }}</div>
+      </div>
+      <ion-icon name="receipt" class="kpi-icon"></ion-icon>
+    </div>
+
+    <div class="kpi-card bg-warning">
+      <div class="kpi-content">
+        <div class="kpi-label">Item Terjual</div>
+        <div class="kpi-value">{{ summary.item_terjual }}</div>
+      </div>
+      <ion-icon name="cube" class="kpi-icon"></ion-icon>
+    </div>
+
+    <div class="kpi-card bg-info">
+      <div class="kpi-content">
+        <div class="kpi-label">Rata-rata Transaksi</div>
+        <div class="kpi-value">{{ (summary.total_transaksi > 0 ? (summary.total_pendapatan / summary.total_transaksi) : 0) | currency:'Rp ':'symbol':'1.0-0' }}</div>
+      </div>
+      <ion-icon name="calculator" class="kpi-icon"></ion-icon>
+    </div>
+  </div>
+
+  <!-- Chart Section -->
+  <div class="content-card mb-4">
+    <div class="card-header">
+      <h3>Grafik Penjualan ({{ periodeText }})</h3>
+    </div>
+    <div class="chart-container">
+      <canvas id="salesChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Transaksi Terakhir -->
+  <div class="content-card">
+    <div class="card-header">
+      <h3>Riwayat Transaksi ({{ periodeText }})</h3>
+      <ion-button fill="outline" size="small" (click)="loadData()">
+        <ion-icon name="refresh-outline" slot="start"></ion-icon> Refresh
+      </ion-button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Waktu Transaksi</th>
+            <th>ID Transaksi</th>
+            <th>Item Dibeli</th>
+            <th>Total Item</th>
+            <th>Total Belanja</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let trx of transactions">
+            <td>
+              <strong>{{ trx.waktu_transaksi | date:'dd/MM/yyyy' }}</strong><br>
+              <small class="text-muted">{{ trx.waktu_transaksi | date:'HH:mm:ss' }}</small>
+            </td>
+            <td>
+              <span class="badge-id">TRX-{{ trx.id_penjualan }}</span>
+            </td>
+            <td>
+              <div class="item-list">{{ trx.detail_item }}</div>
+            </td>
+            <td><strong>{{ trx.jumlah_item }}</strong></td>
+            <td><strong class="text-primary">{{ trx.total_belanja | currency:'Rp ':'symbol':'1.0-0' }}</strong></td>
+          </tr>
+          <tr *ngIf="transactions.length === 0">
+            <td colspan="5" class="text-center py-4 text-muted">
+              Tidak ada transaksi pada periode ini.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Buku Besar Section -->
+  <div class="content-card">
+    <div class="card-header">
+      <h3>Buku Besar (Jurnal Keuangan)</h3>
+      <ion-button color="success" size="small" (click)="syncGoogleSheets()" [disabled]="isSyncing">
+        <ion-spinner *ngIf="isSyncing" name="crescent" slot="start"></ion-spinner>
+        <ion-icon *ngIf="!isSyncing" name="cloud-upload-outline" slot="start"></ion-icon> 
+        {{ isSyncing ? 'Menyinkronkan...' : 'Sync ke Google Sheets' }}
+      </ion-button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>ID Transaksi</th>
+            <th>Tipe Transaksi</th>
+            <th>Keterangan</th>
+            <th>Debit</th>
+            <th>Kredit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let j of bukuBesar">
+            <td><strong>{{ j.tanggal | date:'dd/MM/yyyy' }}</strong></td>
+            <td>
+              <span class="badge-id" *ngIf="j.id_penjualan">TRX-{{ j.id_penjualan }}</span>
+              <span class="badge-id-buy" *ngIf="j.id_pembelian">BUY-{{ j.id_pembelian }}</span>
+              <span *ngIf="!j.id_penjualan && !j.id_pembelian">-</span>
+            </td>
+            <td>
+              <ion-badge [color]="j.tipe_transaksi === 'Pendapatan Penjualan' ? 'success' : 'danger'">
+                {{ j.tipe_transaksi }}
+              </ion-badge>
+            </td>
+            <td>{{ j.keterangan }}</td>
+            <td><strong class="text-success">{{ j.tipe_transaksi === 'Pendapatan Penjualan' ? (j.nominal | currency:'Rp ':'symbol':'1.0-0') : '-' }}</strong></td>
+            <td><strong class="text-danger">{{ j.tipe_transaksi !== 'Pendapatan Penjualan' ? (j.nominal | currency:'Rp ':'symbol':'1.0-0') : '-' }}</strong></td>
+          </tr>
+          <tr *ngIf="bukuBesar.length === 0">
+            <td colspan="6" class="text-center py-4 text-muted">
+              Tidak ada jurnal pada periode ini.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </ion-content>

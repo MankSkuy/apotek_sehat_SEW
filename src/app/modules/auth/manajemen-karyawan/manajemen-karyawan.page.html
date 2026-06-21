@@ -1,13 +1,54 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>manajemen-karyawan</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content [fullscreen]="true" class="ion-padding bg-light">
+  <div class="content-card">
+    <div class="card-header">
+      <div class="header-title">
+        <ion-icon name="people-outline"></ion-icon>
+        <h2>Manajemen Karyawan</h2>
+      </div>
+      <ion-button color="primary" class="btn-baru" (click)="openTambahModal()" *ngIf="isOwner">
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        Karyawan Baru
+      </ion-button>
+    </div>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">manajemen-karyawan</ion-title>
-    </ion-toolbar>
-  </ion-header>
+    <div class="table-responsive">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama Karyawan</th>
+            <th>Username</th>
+            <th>Role</th>
+            <th *ngIf="isOwner">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let k of karyawanList; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td><strong>{{ k.nama_karyawan }}</strong></td>
+            <td>{{ k.username }}</td>
+            <td>
+              <ion-badge [color]="getRoleColor(k.role)">{{ k.role }}</ion-badge>
+            </td>
+            <td *ngIf="isOwner">
+              <ion-button fill="outline" color="primary" size="small" (click)="openEditModal(k)">
+                <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+              <ion-button fill="outline" color="warning" size="small" (click)="openRoleModal(k)" class="ms-2">
+                <ion-icon name="shield-checkmark-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+              <ion-button fill="outline" color="danger" size="small" (click)="konfirmasiHapus(k)" class="ms-2">
+                <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </td>
+          </tr>
+          <tr *ngIf="karyawanList.length === 0">
+            <td [colSpan]="isOwner ? 5 : 4" class="text-center py-4 text-muted">
+              Belum ada data karyawan.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </ion-content>

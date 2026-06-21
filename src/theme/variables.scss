@@ -1,2 +1,53 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+// variables.scss — Apotek Sehat Theme
+
+:root {
+  // ===== PRIMARY COLOR (Biru-Teal dari Figma navbar & tombol) =====
+  --ion-color-primary: #1a73e8;
+  --ion-color-primary-rgb: 26, 115, 232;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #1765cc;
+  --ion-color-primary-tint: #3181ea;
+
+  // ===== SUCCESS (Badge "Aman" — hijau) =====
+  --ion-color-success: #437a22;
+  --ion-color-success-rgb: 67, 122, 34;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-shade: #3b6b1e;
+  --ion-color-success-tint: #568738;
+
+  // ===== WARNING (Badge "Stok Rendah" & "Hampir Expired" — oranye) =====
+  --ion-color-warning: #da7101;
+  --ion-color-warning-rgb: 218, 113, 1;
+  --ion-color-warning-contrast: #ffffff;
+  --ion-color-warning-shade: #c06301;
+  --ion-color-warning-tint: #de7f1a;
+
+  // ===== DANGER (Badge "Hampir Expired" merah-pink) =====
+  --ion-color-danger: #a12c7b;
+  --ion-color-danger-rgb: 161, 44, 123;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-shade: #8e276c;
+  --ion-color-danger-tint: #aa4188;
+
+  // ===== BACKGROUND & SURFACE =====
+  --ion-background-color: #f7f6f2;
+  --ion-background-color-rgb: 247, 246, 242;
+
+  --ion-card-background: #ffffff;
+
+  // ===== TEXT =====
+  --ion-text-color: #28251d;
+  --ion-text-color-rgb: 40, 37, 29;
+
+  // ===== TOOLBAR (Navbar atas — warna biru dari Figma) =====
+  --ion-toolbar-background: #1a73e8;
+  --ion-toolbar-color: #ffffff;
+
+  // ===== BORDER / DIVIDER =====
+  --ion-border-color: #d4d1ca;
+  --ion-item-border-color: #dcd9d5;
+
+  // ===== FONT =====
+  --ion-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+}
