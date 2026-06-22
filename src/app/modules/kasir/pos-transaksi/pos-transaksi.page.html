@@ -1,0 +1,146 @@
+<ion-content [fullscreen]="true" class="bg-light">
+  <div class="pos-container">
+    <div class="pos-left">
+      <div class="search-header">
+        <div class="search-title-row">
+          <h2>Penjualan Kasir</h2>
+
+          <ion-searchbar 
+            placeholder="Cari nama obat..." 
+            mode="md"
+            [(ngModel)]="searchTerm"
+            (ionInput)="filterObat()"
+            class="pos-search">
+          </ion-searchbar>
+        </div>
+
+        <div class="category-chips">
+          <ion-chip [color]="selectedCategory === 'Semua' ? 'primary' : 'medium'" (click)="setCategory('Semua')">
+            Semua
+          </ion-chip>
+          <ion-chip [color]="selectedCategory === 'Obat Bebas' ? 'primary' : 'medium'" (click)="setCategory('Obat Bebas')">
+            Obat Bebas
+          </ion-chip>
+          <ion-chip [color]="selectedCategory === 'Obat Keras' ? 'primary' : 'medium'" (click)="setCategory('Obat Keras')">
+            Obat Keras
+          </ion-chip>
+          <ion-chip [color]="selectedCategory === 'Alat Kesehatan' ? 'primary' : 'medium'" (click)="setCategory('Alat Kesehatan')">
+            Alkes
+          </ion-chip>
+        </div>
+      </div>
+
+      <div class="product-grid">
+        <div class="product-card" 
+             *ngFor="let item of filteredObat" 
+             (click)="addToCart(item)"
+             [class.out-of-stock]="item.jumlah_stok <= 0">
+          
+          <div class="product-badge" *ngIf="item.resep">Resep</div>
+          <div class="out-stock-overlay" *ngIf="item.jumlah_stok <= 0">Stok Habis</div>
+
+          <div class="product-info">
+            <div class="product-name">{{ item.nama_obat }}</div>
+            <div class="product-stock">Stok: {{ item.jumlah_stok }}</div>
+            
+            <div class="product-bottom-row">
+              <div class="product-price">
+                {{ item.harga_jual | currency:'Rp ':'symbol':'1.0-0' }}
+              </div>
+              <div class="add-btn">
+                 + 
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="no-data" *ngIf="filteredObat.length === 0">
+          <ion-icon name="search-outline"></ion-icon>
+          <p>Obat tidak ditemukan</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pos-right">
+      <div class="cart-header">
+        <h3>Keranjang Belanja</h3>
+        <ion-button fill="clear" color="danger" size="small" (click)="clearCart()" *ngIf="cart.length > 0">
+          Kosongkan
+        </ion-button>
+      </div>
+
+      <div class="cart-items">
+        <div class="empty-cart" *ngIf="cart.length === 0">
+          <ion-icon name="cart-outline"></ion-icon>
+          <p>Keranjang masih kosong</p>
+        </div>
+
+        <div class="cart-item" *ngFor="let item of cart; let i = index">
+          <div class="item-details">
+            <div class="item-name">{{ item.nama_obat }}</div>
+            <div class="item-price">
+              {{ item.harga_jual | currency:'Rp ':'symbol':'1.0-0' }}
+            </div>
+          </div>
+          
+          <div class="item-actions">
+            <button class="qty-btn" (click)="decreaseQty(i)">-</button>
+            <input 
+              type="number" 
+              class="qty-input" 
+              [(ngModel)]="item.qty" 
+              (change)="updateSubtotal(i)" 
+              min="1">
+            <button class="qty-btn" (click)="increaseQty(i)">+</button>
+          </div>
+
+          <div class="item-subtotal">
+            {{ item.subtotal | currency:'Rp ':'symbol':'1.0-0' }}
+          </div>
+          
+          <button class="btn-remove" (click)="removeFromCart(i)">
+            <ion-icon name="trash"></ion-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="cart-summary">
+        <div class="summary-row">
+          <span>Total Item</span>
+          <span>{{ getTotalItems() }}</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total Bayar</span>
+          <span>
+            {{ getTotalPrice() | currency:'Rp ':'symbol':'1.0-0' }}
+          </span>
+        </div>
+        
+        <div class="payment-section" *ngIf="cart.length > 0">
+          <label>Uang Tunai (Rp)</label>
+          <input 
+            type="number" 
+            class="payment-input" 
+            [(ngModel)]="uangTunai" 
+            placeholder="Masukkan jumlah uang...">
+          
+          <div class="kembalian-row" *ngIf="uangTunai > 0">
+            <span>Kembalian</span>
+            <span [class.text-danger]="uangTunai < getTotalPrice()">
+              {{ (uangTunai - getTotalPrice()) | currency:'Rp ':'symbol':'1.0-0' }}
+            </span>
+          </div>
+        </div>
+
+        <ion-button 
+          expand="block" 
+          color="primary" 
+          class="btn-checkout mt-3" 
+          [disabled]="cart.length === 0 || uangTunai < getTotalPrice() || isProcessing"
+          (click)="checkout()">
+          {{ isProcessing ? 'Memproses...' : 'Proses Pembayaran' }}
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</ion-content>
