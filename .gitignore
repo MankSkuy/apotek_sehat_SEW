@@ -68,3 +68,9 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Credentials / Secrets
+backend/config/google-credentials.json
+*.json.enc
+.env
+.env.*
