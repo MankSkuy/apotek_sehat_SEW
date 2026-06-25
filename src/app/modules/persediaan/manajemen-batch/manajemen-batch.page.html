@@ -1,0 +1,229 @@
+<ion-content [fullscreen]="true" class="ion-padding bg-light">
+
+  <!-- Warning Banner (Dynamic) -->
+  <div class="warning-banner" *ngIf="warningCount > 0">
+    <div class="warning-title">
+      <ion-icon name="warning"></ion-icon>
+      PERINGATAN - {{ warningCount }} Item Memerlukan Perhatian!
+    </div>
+    
+    <div class="warning-list" *ngIf="stokMenipisList.length > 0">
+      <div class="warning-subtitle">
+        <ion-icon name="alert-circle-outline"></ion-icon> Stok Menipis ({{ stokMenipisList.length }} item):
+      </div>
+      <div class="warning-item clickable" *ngFor="let item of stokMenipisList" (click)="filterByObat(item.nama_obat)">
+        <strong>{{ item.nama_obat }}</strong><br>
+        <small>Tersisa {{ item.total_stok }} unit | Min: {{ item.stok_minimal }} (Klik untuk lihat batch)</small>
+      </div>
+    </div>
+
+    <div class="warning-list mt-2" *ngIf="hampirExpiredList.length > 0">
+      <div class="warning-subtitle">
+        <ion-icon name="time-outline"></ion-icon> Mendekati Kadaluarsa ({{ hampirExpiredList.length }} item):
+      </div>
+      <div class="warning-item clickable" *ngFor="let item of hampirExpiredList" (click)="filterByObat(item.nama_obat)">
+        <strong>{{ item.nama_obat }}</strong> (ID Batch: {{ item.id_batch_obat }})<br>
+        <small>Kadaluarsa dalam {{ item.sisa_hari }} hari ({{ item.tanggal_expired | date:'dd/MM/yyyy' }}) (Klik untuk lihat batch)</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Cards Row -->
+  <div class="kpi-row">
+    <div class="kpi-card bg-primary">
+      <div class="kpi-content">
+        <div class="kpi-label">Total Item Obat</div>
+        <div class="kpi-value">{{ summary.total_item }}</div>
+      </div>
+      <ion-icon name="cube-outline" class="kpi-icon"></ion-icon>
+    </div>
+    
+    <div class="kpi-card bg-warning-light">
+      <div class="kpi-content">
+        <div class="kpi-label">Stok Menipis</div>
+        <div class="kpi-value text-dark">{{ summary.stok_menipis }}</div>
+      </div>
+      <ion-icon name="alert-circle-outline" class="kpi-icon text-warning"></ion-icon>
+    </div>
+
+    <div class="kpi-card bg-success">
+      <div class="kpi-content">
+        <div class="kpi-label">Estimasi Nilai Stok</div>
+        <div class="kpi-value">{{ summary.estimasi_nilai | currency:'Rp ':'symbol':'1.0-0' }}</div>
+      </div>
+      <ion-icon name="cash-outline" class="kpi-icon"></ion-icon>
+    </div>
+
+    <div class="kpi-card bg-danger-light">
+      <div class="kpi-content">
+        <div class="kpi-label">Hampir Kadaluarsa</div>
+        <div class="kpi-value text-dark">{{ summary.hampir_expired }}</div>
+      </div>
+      <ion-icon name="hourglass-outline" class="kpi-icon text-danger"></ion-icon>
+    </div>
+  </div>
+
+  <!-- Main Content Card -->
+  <div class="content-card">
+    <div class="card-header">
+      <div class="header-title">
+        <ion-icon name="layers-outline"></ion-icon>
+        <h2>Manajemen Stok & Batch</h2>
+      </div>
+      <ion-button color="primary" class="btn-batch-baru" (click)="openBatchModal()">
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        Batch Baru
+      </ion-button>
+    </div>
+
+    <div class="filter-row">
+      <ion-searchbar 
+        placeholder="Cari obat atau kategori..." 
+        [(ngModel)]="searchTerm" 
+        (ionInput)="filterData()"
+        mode="md"
+        class="search-input">
+      </ion-searchbar>
+      
+      <div class="status-filter">
+        <span class="filter-label">Filter Status:</span>
+        <select class="custom-select" [(ngModel)]="statusFilter" (change)="filterData()">
+          <option value="Semua Status">Semua Status</option>
+          <option value="Aman">Aman</option>
+          <option value="Stok Rendah">Stok Rendah</option>
+          <option value="Hampir Expired">Hampir Expired</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Nama Obat</th>
+            <th>Kategori</th>
+            <th>Stok</th>
+            <th>Harga Beli</th>
+            <th>Harga Jual</th>
+            <th>Kadaluarsa</th>
+            <th>Sisa Hari</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let batch of filteredBatches">
+            <td>
+              <strong>{{ batch.nama_obat }}</strong>
+              <div *ngIf="batch.resep" class="badge-resep mt-1">Resep Dokter</div>
+            </td>
+            <td class="text-muted">{{ batch.kategori_obat }}</td>
+            <td>
+              <span [class.text-danger]="batch.jumlah_stok <= batch.stok_minimal">
+                <strong>{{ batch.jumlah_stok }} unit</strong>
+              </span>
+            </td>
+            <td>{{ batch.harga_beli | currency:'Rp ':'symbol':'1.0-0' }}</td>
+            <td><strong>{{ batch.harga_jual | currency:'Rp ':'symbol':'1.0-0' }}</strong></td>
+            <td>{{ batch.tanggal_expired | date:'dd/MM/yyyy' }}</td>
+            <td><strong>{{ batch.sisa_hari }} hari</strong></td>
+            <td>
+              <span class="badge-status" [ngClass]="getBadgeClass(batch)">
+                {{ getStatusText(batch) }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="filteredBatches.length === 0">
+            <td colspan="8" class="text-center py-4 text-muted">Tidak ada data batch obat ditemukan.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal Input Batch Baru (Multi-Item) -->
+  <ion-modal [isOpen]="isModalOpen" (didDismiss)="isModalOpen = false" class="batch-modal">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar>
+          <ion-title>
+            <ion-icon name="add-circle" color="primary"></ion-icon>
+            Input Batch Obat Baru (Multi-Item)
+          </ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="isModalOpen = false">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding bg-light">
+        
+        <div class="batch-item-card" *ngFor="let item of newBatchItems; let i = index">
+          <div class="item-header">
+            <h4>Obat #{{ i + 1 }}</h4>
+            <ion-button fill="clear" color="danger" size="small" (click)="hapusItemBatch(i)" *ngIf="newBatchItems.length > 1">
+              <ion-icon name="trash-outline" slot="start"></ion-icon> Hapus
+            </ion-button>
+          </div>
+
+          <div class="form-group">
+            <label>Pilih Obat & Kategori</label>
+            <select class="custom-select w-100" [(ngModel)]="item.id_obat">
+              <option [value]="null">-- Pilih Obat --</option>
+              <option *ngFor="let obat of obatList" [value]="obat.id_obat">
+                {{ obat.nama_obat }} ({{ obat.kategori_obat }})
+              </option>
+            </select>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label>Jumlah Stok Masuk</label>
+                <input type="number" class="custom-input w-100" [(ngModel)]="item.jumlah_stok" min="1">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label>Tanggal Kadaluarsa</label>
+                <input type="date" class="custom-input w-100" [(ngModel)]="item.tanggal_expired">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label>Harga Beli (Satuan)</label>
+                <input type="number" class="custom-input w-100" [(ngModel)]="item.harga_beli" min="0">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label>Harga Jual (Satuan)</label>
+                <input type="number" class="custom-input w-100" [(ngModel)]="item.harga_jual" min="0">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-add-more w-100 mb-3" (click)="tambahItemBatch()">
+          + Tambah Obat Lain ke Batch ini
+        </button>
+
+      </ion-content>
+
+      <ion-footer class="ion-no-border bg-white ion-padding">
+        <div class="modal-actions">
+          <ion-button fill="outline" color="medium" (click)="isModalOpen = false">Batal</ion-button>
+          <ion-button color="success" (click)="simpanBatch()" [disabled]="isSaving">
+            <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+            {{ isSaving ? 'Menyimpan...' : 'Simpan Semua Obat ke Batch' }}
+          </ion-button>
+        </div>
+      </ion-footer>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>

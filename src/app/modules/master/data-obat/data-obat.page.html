@@ -1,0 +1,136 @@
+<ion-content class="ion-padding">
+
+  <div class="page-header">
+    <div class="page-title">
+      <ion-icon name="medkit-outline"></ion-icon>
+      <h2>Master Data Obat</h2>
+    </div>
+    <ion-button color="primary" (click)="openTambahModal()">
+      <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+      Tambah Obat Baru
+    </ion-button>
+  </div>
+
+  <ion-searchbar
+    placeholder="Cari nama obat atau kategori..."
+    [(ngModel)]="searchTerm"
+    (ionInput)="filterObat()"
+    debounce="300">
+  </ion-searchbar>
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nama Obat</th>
+          <th>Kategori</th>
+          <th>Satuan</th>
+          <th>Stok Minimal</th>
+          <th>Total Stok</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="isLoading">
+          <td colspan="6" class="text-center">
+            <ion-spinner name="crescent"></ion-spinner> Memuat data...
+          </td>
+        </tr>
+        <tr *ngIf="!isLoading && filteredObat.length === 0">
+          <td colspan="6" class="text-center text-muted">
+            Tidak ada data obat ditemukan.
+          </td>
+        </tr>
+        <tr *ngFor="let obat of filteredObat">
+          <td><strong>{{ obat.nama_obat }}</strong></td>
+          <td>
+            <ion-badge [color]="getCategoryColor(obat.kategori_obat)">
+              {{ obat.kategori_obat }}
+            </ion-badge>
+          </td>
+          <td>{{ obat.satuan }}</td>
+          <td>{{ obat.stok_minimal }}</td>
+          <td>
+            <span [class]="obat.total_stok <= obat.stok_minimal ? 'stok-warning' : 'stok-ok'">
+              {{ obat.total_stok || 0 }}
+            </span>
+          </td>
+          <td>
+            <ion-button fill="outline" color="primary" size="small" (click)="openEditModal(obat)">
+              <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+            <ion-button fill="outline" color="danger" size="small" (click)="konfirmasiHapus(obat)" class="ms-2">
+              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ion-modal [isOpen]="showModal" (didDismiss)="closeModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>{{ editingObat ? 'Edit Obat' : 'Tambah Obat Baru' }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeModal()">
+              <ion-icon name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-list>
+          <ion-item>
+            <ion-label position="stacked">
+              Nama Obat <span class="required">*</span>
+            </ion-label>
+            <ion-input
+              [(ngModel)]="newObat.nama_obat"
+              placeholder="Contoh: Paracetamol 500mg">
+            </ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">
+              Kategori <span class="required">*</span>
+            </ion-label>
+            <ion-select [(ngModel)]="newObat.kategori_obat" placeholder="Pilih Kategori">
+              <ion-select-option value="Obat Bebas">Obat Bebas</ion-select-option>
+              <ion-select-option value="Obat Keras">Obat Keras</ion-select-option>
+              <ion-select-option value="Alkes">Alkes</ion-select-option>
+              <ion-select-option value="Suplemen">Suplemen</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">
+              Satuan <span class="required">*</span>
+            </ion-label>
+            <ion-select [(ngModel)]="newObat.satuan" placeholder="Pilih Satuan">
+              <ion-select-option value="tablet">Tablet</ion-select-option>
+              <ion-select-option value="kapsul">Kapsul</ion-select-option>
+              <ion-select-option value="botol">Botol</ion-select-option>
+              <ion-select-option value="strip">Strip</ion-select-option>
+              <ion-select-option value="sachet">Sachet</ion-select-option>
+              <ion-select-option value="buah">Buah</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Stok Minimal</ion-label>
+            <ion-input
+              type="number"
+              [(ngModel)]="newObat.stok_minimal">
+            </ion-input>
+          </ion-item>
+        </ion-list>
+        <div class="modal-footer">
+          <ion-button expand="block" color="primary" (click)="simpanObat()" [disabled]="isSaving">
+            <ion-spinner *ngIf="isSaving" name="crescent" slot="start"></ion-spinner>
+            {{ isSaving ? 'Menyimpan...' : 'Simpan Obat' }}
+          </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>
