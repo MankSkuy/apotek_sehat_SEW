@@ -1,0 +1,159 @@
+<ion-content class="ion-padding dashboard-content">
+
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div>
+      <h2>Dashboard</h2>
+      <p>Selamat datang di Apotek Sehat</p>
+    </div>
+    <ion-button fill="outline" size="small" (click)="refresh()">
+      <ion-icon name="refresh-outline" slot="start"></ion-icon>
+      Refresh
+    </ion-button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Memuat data...</p>
+  </div>
+
+  <div *ngIf="!isLoading">
+
+    <!-- KPI Cards Row 1 — Penjualan Hari Ini -->
+    <p class="section-label">Penjualan Hari Ini</p>
+    <div class="kpi-grid">
+      <div class="kpi-card blue">
+        <div class="kpi-icon">
+          <ion-icon name="wallet-outline"></ion-icon>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Total Pendapatan</span>
+          <span class="kpi-value">{{ formatRupiah(totalPendapatan) }}</span>
+        </div>
+      </div>
+
+      <div class="kpi-card green">
+        <div class="kpi-icon">
+          <ion-icon name="receipt-outline"></ion-icon>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Total Transaksi</span>
+          <span class="kpi-value">{{ totalTransaksi }}</span>
+        </div>
+      </div>
+
+      <div class="kpi-card yellow">
+        <div class="kpi-icon">
+          <ion-icon name="cube-outline"></ion-icon>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Item Terjual</span>
+          <span class="kpi-value">{{ itemTerjual }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Cards Row 2 — Status Stok -->
+    <p class="section-label">Status Stok</p>
+    <div class="kpi-grid">
+      <div class="kpi-card blue">
+        <div class="kpi-icon">
+          <ion-icon name="cube-outline"></ion-icon>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Total Jenis Obat</span>
+          <span class="kpi-value">{{ totalItemObat }}</span>
+        </div>
+      </div>
+
+      <div class="kpi-card" [class.red]="stokMenipis > 0" [class.green]="stokMenipis === 0">
+        <div class="kpi-icon">
+          <ion-icon name="warning-outline"></ion-icon>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Stok Menipis</span>
+          <span class="kpi-value">{{ stokMenipis }}</span>
+        </div>
+      </div>
+
+      <div class="kpi-card" [class.red]="hampirExpired > 0" [class.green]="hampirExpired === 0">
+        <div class="kpi-icon">
+          <ion-icon name="time-outline"></ion-icon>
+        </div>
+        <div class="kpi-info">
+          <span class="kpi-label">Hampir Kadaluarsa</span>
+          <span class="kpi-value">{{ hampirExpired }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Warning Banner Stok Menipis -->
+    <div class="warning-section" *ngIf="stokMenipisList.length > 0">
+      <div class="warning-header orange">
+        <ion-icon name="warning-outline"></ion-icon>
+        <span>Stok Menipis ({{ stokMenipisList.length }} obat)</span>
+        <a routerLink="/manajemen-batch" class="lihat-semua">Lihat Semua →</a>
+      </div>
+      <div class="warning-list">
+        <div class="warning-item" *ngFor="let item of stokMenipisList">
+          <span class="warning-name">{{ item.nama_obat }}</span>
+          <ion-badge color="warning">Stok: {{ item.total_stok }} / Min: {{ item.stok_minimal }}</ion-badge>
+        </div>
+      </div>
+    </div>
+
+    <!-- Warning Banner Hampir Expired -->
+    <div class="warning-section" *ngIf="hampirExpiredList.length > 0">
+      <div class="warning-header red">
+        <ion-icon name="time-outline"></ion-icon>
+        <span>Hampir Kadaluarsa ({{ hampirExpiredList.length }} batch)</span>
+        <a routerLink="/manajemen-batch" class="lihat-semua">Lihat Semua →</a>
+      </div>
+      <div class="warning-list">
+        <div class="warning-item" *ngFor="let item of hampirExpiredList">
+          <span class="warning-name">{{ item.nama_obat }}</span>
+          <ion-badge color="danger">{{ item.sisa_hari }} hari lagi</ion-badge>
+        </div>
+      </div>
+    </div>
+
+    <!-- Semua aman -->
+    <div class="all-good" *ngIf="stokMenipisList.length === 0 && hampirExpiredList.length === 0">
+      <ion-icon name="checkmark-circle-outline"></ion-icon>
+      <p>Semua stok dalam kondisi baik 🎉</p>
+    </div>
+
+    <!-- Transaksi Terbaru -->
+    <div class="recent-section">
+      <div class="recent-header">
+        <span>Transaksi Terbaru (7 Hari)</span>
+        <a routerLink="/laporan" class="lihat-semua">Lihat Semua →</a>
+      </div>
+      <div class="table-container" *ngIf="transaksiTerbaru.length > 0">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Waktu</th>
+              <th>ID Transaksi</th>
+              <th>Item Dibeli</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let trx of transaksiTerbaru">
+              <td>{{ formatDate(trx.waktu_transaksi) }}</td>
+              <td><strong>#{{ trx.id_penjualan }}</strong></td>
+              <td class="item-detail">{{ trx.detail_item }}</td>
+              <td class="total-belanja">{{ formatRupiah(trx.total_belanja) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="empty-state" *ngIf="transaksiTerbaru.length === 0">
+        <p>Belum ada transaksi dalam 7 hari terakhir.</p>
+      </div>
+    </div>
+
+  </div>
+
+</ion-content>
